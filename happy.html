@@ -3,450 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>读不懂你的眸 - 新年快乐</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <title>赛博少女基因重组实验室 | Cyber-Gen V5.2</title>
     <style>
-        body {
-            font-family: 'Noto Serif SC', serif;
-            overflow-x: hidden;
-            background-color: #2c0b0e; /* Deep Red Background */
-            color: #ffd700;
+        :root {
+            --pink: #ff007f;
+            --blue: #00f3ff;
+            --green: #39ff14;
+            --purple: #bc13fe;
+            --glass: rgba(255, 255, 255, 0.08);
         }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            background: #050505; color: #fff;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            overflow: hidden;
+        }
+
+        /* 动态背景星云 */
+        .nebula {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(188, 19, 254, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 243, 255, 0.15) 0%, transparent 50%);
+            z-index: -2;
+            animation: backgroundFlow 10s ease-in-out infinite alternate;
+        }
+        @keyframes backgroundFlow { 0% { transform: scale(1) rotate(0deg); } 100% { transform: scale(1.1) rotate(2deg); } }
+
+        /* 网格背景 */
+        .grid-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+
+        /* 合成时的全屏闪烁 */
+        .flash-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; opacity: 0; z-index: 5000; pointer-events: none;
+        }
+        .flash-active { animation: flashAnim 0.4s ease-out; }
+        @keyframes flashAnim { 0% { opacity: 0.8; } 100% { opacity: 0; } }
+
+        header {
+            height: 60px; display: flex; align-items: center; justify-content: center;
+            border-bottom: 2px solid var(--blue); background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.3); letter-spacing: 8px; font-weight: bold; font-size: 1.2rem;
+        }
+
+        .container { display: flex; height: calc(100vh - 60px); padding: 20px; gap: 20px; box-sizing: border-box; }
+
+        /* 左侧：基因仓库 */
+        .sidebar {
+            width: 260px; background: var(--glass); border: 1px solid var(--pink); border-radius: 10px;
+            padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-content: start;
+        }
+        .sidebar h3 { grid-column: span 2; font-size: 13px; color: var(--pink); margin: 0 0 10px 0; border-bottom: 1px solid rgba(255,0,127,0.3); padding-bottom: 5px; }
+
+        .element {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid #444; padding: 12px 5px;
+            border-radius: 8px; text-align: center; cursor: grab; transition: 0.3s;
+        }
+        .element:hover { border-color: var(--blue); background: rgba(0, 243, 255, 0.1); box-shadow: 0 0 15px var(--blue); transform: translateY(-3px); }
+        .element-icon { font-size: 30px; display: block; margin-bottom: 5px; }
+        .element-name { font-size: 11px; color: #ddd; }
+
+        /* 中间：观测核心区 */
+        .main-view { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         
-        .font-artistic {
-            font-family: 'Ma Shan Zheng', cursive;
+        .core-pod {
+            width: 240px; height: 320px; border: 4px solid var(--blue); border-radius: 120px 120px 30px 30px;
+            position: relative; background: radial-gradient(circle at center, rgba(0, 243, 255, 0.1) 0%, transparent 80%);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2); display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
+        .core-pod.active { box-shadow: 0 0 60px var(--pink); border-color: var(--pink); transform: scale(1.05); }
+        
+        #mix-num { font-size: 65px; font-weight: 900; text-shadow: 0 0 20px var(--blue); color: #fff; }
 
-        /* Lantern Animation */
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(2deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
+        .btn-synth {
+            margin-top: 30px; padding: 15px 70px; font-size: 20px; background: transparent;
+            border: 2px solid var(--green); color: var(--green); cursor: pointer; font-weight: bold; letter-spacing: 10px;
+            transition: 0.3s; box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
         }
+        .btn-synth:hover { background: var(--green); color: #000; box-shadow: 0 0 30px var(--green); }
 
-        .lantern {
-            animation: float 4s ease-in-out infinite;
-            transform-origin: top center;
+        /* 弹出照片及扫描特效 */
+        .photo-frame {
+            position: absolute; width: 280px; background: #fff; padding: 12px; box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            z-index: 1000; cursor: move; animation: photoIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
+        @keyframes photoIn { 0% { transform: scale(0) rotate(-20deg); opacity: 0; } 100% { transform: scale(1) rotate(var(--rot)) translate(-50%, -50%); opacity: 1; } }
+        
+        .photo-frame img { width: 100%; display: block; border: 1px solid #eee; }
+        .scanner { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--green); box-shadow: 0 0 10px var(--green); animation: scanMove 2s linear infinite; pointer-events: none; }
+        @keyframes scanMove { 0% { top: 0; } 100% { top: 100%; } }
 
-        .lantern:nth-child(odd) {
-            animation-duration: 5s;
-            animation-delay: 1s;
-        }
+        /* 右侧：装饰挂件区 */
+        .decor-bar { width: 110px; background: var(--glass); border: 1px solid var(--green); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+        .decor-btn { font-size: 28px; text-align: center; cursor: pointer; padding: 8px; border-radius: 8px; transition: 0.2s; background: rgba(255,255,255,0.05); border: 1px solid rgba(57, 255, 20, 0.2); }
+        .decor-btn:hover { background: var(--green); transform: scale(1.1); box-shadow: 0 0 15px var(--green); }
+        .sticker { position: absolute; font-size: 55px; pointer-events: none; z-index: 1100; filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.3)); }
 
-        /* Firefly/Particle Canvas */
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* Glassmorphism Card */
-        .glass-card {
-            background: rgba(60, 20, 20, 0.6);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-
-        /* Button Hover Effects */
-        .btn-gold {
-            background: linear-gradient(45deg, #b8860b, #ffd700, #b8860b);
-            background-size: 200% auto;
-            transition: 0.5s;
-        }
-        .btn-gold:hover {
-            background-position: right center;
-            box-shadow: 0 0 20px #ffd700;
-        }
-
-        /* Text Glow */
-        .text-glow {
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7), 0 0 20px rgba(255, 215, 0, 0.5);
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #2c0b0e; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #8b0000; 
-            border-radius: 4px;
-        }
-
-        /* Confetti */
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #f00;
-            animation: fall linear forwards;
-        }
-        @keyframes fall {
-            to { transform: translateY(100vh) rotate(720deg); }
-        }
+        .hint-text { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); color: #666; font-size: 11px; letter-spacing: 1px; }
     </style>
 </head>
-<body class="min-h-screen relative selection:bg-yellow-600 selection:text-white">
+<body>
 
-    <!-- Background Canvas for Particles -->
-    <canvas id="canvas-container"></canvas>
+<div class="flash-overlay" id="flash"></div>
+<div class="nebula"></div>
+<div class="grid-bg"></div>
 
-    <!-- Decorative Lanterns (SVG) -->
-    <div class="fixed top-0 left-10 w-24 h-32 lantern z-10 hidden md:block">
-        <svg viewBox="0 0 100 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="50" y1="0" x2="50" y2="20" stroke="#ffd700" stroke-width="2"/>
-            <path d="M20 30 Q50 10 80 30 L80 100 Q50 120 20 100 Z" fill="#d90429" stroke="#ffd700" stroke-width="2"/>
-            <rect x="35" y="100" width="30" height="10" fill="#ffd700"/>
-            <line x1="50" y1="110" x2="50" y2="140" stroke="#ffd700" stroke-width="2"/>
-            <text x="50" y="75" font-family="serif" font-size="30" fill="#ffd700" text-anchor="middle" dominant-baseline="middle">福</text>
-        </svg>
-    </div>
-    <div class="fixed top-0 right-10 w-24 h-32 lantern z-10 hidden md:block" style="animation-delay: 0.5s;">
-        <svg viewBox="0 0 100 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="50" y1="0" x2="50" y2="20" stroke="#ffd700" stroke-width="2"/>
-            <path d="M20 30 Q50 10 80 30 L80 100 Q50 120 20 100 Z" fill="#d90429" stroke="#ffd700" stroke-width="2"/>
-            <rect x="35" y="100" width="30" height="10" fill="#ffd700"/>
-            <line x1="50" y1="110" x2="50" y2="140" stroke="#ffd700" stroke-width="2"/>
-            <text x="50" y="75" font-family="serif" font-size="30" fill="#ffd700" text-anchor="middle" dominant-baseline="middle">春</text>
-        </svg>
+<header>赛博少女基因重组实验室 V5.2</header>
+
+<div class="container">
+    <div class="sidebar">
+        <h3>待选基因序列：</h3>
+        <div class="element" draggable="true" ondragstart="drag(event)" data-id="1"><span class="element-icon">🍼</span><span class="element-name">幼崽基因</span></div>
+        <div class="element" draggable="true" ondragstart="drag(event)" data-id="2"><span class="element-icon">🌶️</span><span class="element-name">超载辛辣</span></div>
+        <div class="element" draggable="true" ondragstart="drag(event)" data-id="3"><span class="element-icon">🧪</span><span class="element-name">科研废人</span></div>
+        <div class="element" draggable="true" ondragstart="drag(event)" data-id="4"><span class="element-icon">🥔</span><span class="element-name">碳水怪兽</span></div>
+        <div class="element" draggable="true" ondragstart="drag(event)" data-id="5"><span class="element-icon">🌙</span><span class="element-name">熬夜冠军</span></div>
+        <div class="element" draggable="true" ondragstart="drag(event)" data-id="6"><span class="element-icon">🐟</span><span class="element-name">锦鲤附体</span></div>
+        <div class="element" draggable="true" ondragstart="drag(event)" data-id="7"><span class="element-icon">⚡</span><span class="element-name">情绪超频</span></div>
+        <div class="element" draggable="true" ondragstart="drag(event)" data-id="8"><span class="element-icon">🤡</span><span class="element-name">乐子主义</span></div>
     </div>
 
-    <!-- Main Content Container -->
-    <div class="relative z-20 container mx-auto px-4 py-12 flex flex-col items-center justify-center min-h-screen">
-        
-        <!-- Header Section -->
-        <header class="text-center mb-12 animate-fade-in-down">
-            <div class="inline-block border-b-2 border-yellow-600 pb-2 mb-4">
-                <span class="text-yellow-500 tracking-[0.5em] text-sm uppercase">Celebration of 2025</span>
-            </div>
-            <h1 class="text-6xl md:text-8xl font-artistic text-glow mb-2 text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 to-yellow-600">
-                读不懂你的眸
-            </h1>
-            <p class="text-2xl md:text-4xl text-red-400 font-light mt-4 tracking-widest">
-                新春快乐 · 万事顺遂
-            </p>
-        </header>
-
-        <!-- Interactive Main Card -->
-        <main class="w-full max-w-2xl glass-card rounded-2xl p-8 md:p-12 text-center relative overflow-hidden transition-all duration-500 hover:shadow-[0_0_50px_rgba(255,215,0,0.2)]">
-            
-            <!-- Dynamic Content Area -->
-            <div id="app-content">
-                <!-- Initial State -->
-                <div id="welcome-screen">
-                    <h2 class="text-3xl font-bold mb-6 text-yellow-100">新年运势占卜</h2>
-                    <p class="text-gray-300 mb-8 leading-relaxed">
-                        在这辞旧迎新的时刻，<br>
-                        愿你的眼眸永远闪烁着希望的光芒。<br>
-                        点击下方按钮，抽取你的新年关键词。
-                    </p>
-                    <button onclick="startDivination()" class="btn-gold text-red-900 font-bold py-4 px-10 rounded-full text-xl shadow-lg transform hover:scale-105 transition-transform">
-                        开启好运
-                    </button>
-                </div>
-
-                <!-- Result State (Hidden initially) -->
-                <div id="result-screen" class="hidden">
-                    <div class="mb-6">
-                        <span class="text-6xl animate-bounce inline-block">🧧</span>
-                    </div>
-                    <h3 class="text-yellow-500 text-lg uppercase tracking-widest mb-2">你的新年关键词是</h3>
-                    <h2 id="fortune-title" class="text-5xl font-artistic text-white mb-4 text-glow">--</h2>
-                    <p id="fortune-desc" class="text-gray-300 text-lg italic mb-8">--</p>
-                    
-                    <div class="grid grid-cols-2 gap-4 mb-8">
-                        <div class="bg-red-900/50 p-4 rounded-lg border border-red-700">
-                            <div class="text-yellow-500 text-sm mb-1">幸运色</div>
-                            <div id="lucky-color" class="text-xl font-bold text-white">--</div>
-                        </div>
-                        <div class="bg-red-900/50 p-4 rounded-lg border border-red-700">
-                            <div class="text-yellow-500 text-sm mb-1">宜</div>
-                            <div id="lucky-action" class="text-xl font-bold text-white">--</div>
-                        </div>
-                    </div>
-
-                    <button onclick="resetApp()" class="text-yellow-600 hover:text-yellow-400 underline decoration-dotted underline-offset-4 transition-colors">
-                        再抽一次
-                    </button>
-                </div>
-            </div>
-
-            <!-- Decorative Corner Elements -->
-            <div class="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-yellow-600/50 rounded-tl-lg"></div>
-            <div class="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-yellow-600/50 rounded-tr-lg"></div>
-            <div class="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-yellow-600/50 rounded-bl-lg"></div>
-            <div class="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-yellow-600/50 rounded-br-lg"></div>
-        </main>
-
-        <!-- Interactive Mini-Games / Options -->
-        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
-            
-            <!-- Option 1: Fireworks Trigger -->
-            <div class="glass-card p-6 rounded-xl text-center cursor-pointer hover:bg-red-900/40 transition-colors group" onclick="launchFireworks()">
-                <div class="text-4xl mb-3 group-hover:scale-125 transition-transform duration-300">🎆</div>
-                <h3 class="text-yellow-500 font-bold text-lg">燃放烟花</h3>
-                <p class="text-xs text-gray-400 mt-2">点击为夜空增添色彩</p>
-            </div>
-
-            <!-- Option 2: Copy Blessing -->
-            <div class="glass-card p-6 rounded-xl text-center cursor-pointer hover:bg-red-900/40 transition-colors group" onclick="copyBlessing()">
-                <div class="text-4xl mb-3 group-hover:scale-125 transition-transform duration-300">💌</div>
-                <h3 class="text-yellow-500 font-bold text-lg">复制祝福</h3>
-                <p class="text-xs text-gray-400 mt-2">发送给那个特别的人</p>
-            </div>
-
-            <!-- Option 3: Music Toggle (Simulated) -->
-            <div class="glass-card p-6 rounded-xl text-center cursor-pointer hover:bg-red-900/40 transition-colors group" onclick="toggleMusic()">
-                <div class="text-4xl mb-3 group-hover:scale-125 transition-transform duration-300" id="music-icon">🎵</div>
-                <h3 class="text-yellow-500 font-bold text-lg">氛围音效</h3>
-                <p class="text-xs text-gray-400 mt-2" id="music-status">点击开启沉浸体验</p>
-            </div>
+    <div class="main-view">
+        <div class="core-pod" id="pod" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div id="mix-num">0</div>
+            <div style="font-size: 11px; color: var(--blue); letter-spacing: 2px; font-weight: bold;">已载入元素</div>
         </div>
-
-        <footer class="mt-16 text-red-800/60 text-sm">
-            <p>© 2025 读不懂你的眸 |  designed with ❤️</p>
-        </footer>
+        <button class="btn-synth" onclick="synthesize()">开始生成</button>
+        <div id="status" style="margin-top:20px; color: var(--pink); font-size: 12px; font-family: monospace; letter-spacing: 1px;">系统状态：待机中...</div>
     </div>
 
-    <!-- Hidden Input for Copy Function -->
-    <textarea id="blessing-text" class="absolute opacity-0 pointer-events-none">愿【读不懂你的眸】在新的一年里，目光所及皆是温柔，心之所向皆是阳光。新年快乐！</textarea>
+    <div class="decor-bar">
+        <div style="font-size: 10px; color: var(--green); text-align: center; margin-bottom: 5px;">一键恶搞</div>
+        <div class="decor-btn" onclick="applyDecor('🕶️')" title="装酷">🕶️</div>
+        <div class="decor-btn" onclick="applyDecor('💢')" title="暴躁">💢</div>
+        <div class="decor-btn" onclick="applyDecor('💩')" title="加戏">💩</div>
+        <div class="decor-btn" onclick="applyDecor('🐷')" title="饭桶认证">🐷</div>
+        <div class="decor-btn" onclick="applyDecor('🔥')" title="燃起来了">🔥</div>
+        <div class="decor-btn" onclick="applyDecor('💖')" title="注入爱意">💖</div>
+        <button onclick="location.reload()" style="margin-top:auto; background:none; border:1px solid #444; color:#666; font-size:10px; cursor:pointer; padding:5px;">重启实验室</button>
+    </div>
+</div>
 
-    <script>
-        // --- Data: Fortunes ---
-        const fortunes = [
-            { title: "眸光璀璨", desc: "你的眼神将比星辰更耀眼，吸引所有美好的事物。", color: "鎏金色", action: "大胆表白" },
-            { title: "心有灵犀", desc: "即使不言不语，也有人能读懂你眼底的故事。", color: "胭脂红", action: "陪伴家人" },
-            { title: "破茧成蝶", desc: "过去的困惑将化作成长的养分，绽放新的光彩。", color: "翡翠绿", action: "尝试新衣" },
-            { title: "财运亨通", desc: "眼观六路，耳听八方，商机与财富尽在掌握。", color: "琥珀黄", action: "投资理财" },
-            { title: "平安喜乐", desc: "愿你的眼眸永远清澈，不见烦恼，只见欢笑。", color: "天空蓝", action: "外出旅行" },
-            { title: "才华横溢", desc: "灵感如泉涌，你的独特视角将创造非凡价值。", color: "墨玉黑", action: "创作写作" }
-        ];
+<div class="hint-text">提示：将左侧基因图标拖入重组舱，点击生成。照片可自由拖动，上一张会自动消失。</div>
 
-        // --- Logic: Divination ---
-        function startDivination() {
-            const welcomeScreen = document.getElementById('welcome-screen');
-            const resultScreen = document.getElementById('result-screen');
-            
-            // Simple transition effect
-            welcomeScreen.style.opacity = '0';
-            setTimeout(() => {
-                welcomeScreen.classList.add('hidden');
-                resultScreen.classList.remove('hidden');
-                // Trigger reflow
-                void resultScreen.offsetWidth; 
-                resultScreen.style.opacity = '1';
-                
-                // Pick random fortune
-                const randomFortune = fortunes[Math.floor(Math.random() * fortunes.length)];
-                
-                // Animate Text Scramble Effect
-                scrambleText(document.getElementById('fortune-title'), randomFortune.title);
-                document.getElementById('fortune-desc').innerText = randomFortune.desc;
-                document.getElementById('lucky-color').innerText = randomFortune.color;
-                document.getElementById('lucky-action').innerText = randomFortune.action;
-                
-                launchConfetti();
-            }, 500);
+<script>
+    let mixCount = 0;
+    let currentPhotoNode = null;
+
+    // --- 随机文案库 ---
+    const reports = [
+        "观测日志：该样本由于长期‘熬夜’，基因中充满了咖啡因与电子屏幕的余温。",
+        "观测日志：检测到极强的‘干饭’本能，该个体在火锅面前会自动屏蔽饱腹感。",
+        "观测日志：系统分析显示样本灵魂成分中，奶茶占比高达 75.32%，急需注入珍珠。",
+        "观测日志：警告！发现‘拖延症’基因突变，样本正试图延迟本次重组指令。",
+        "观测日志：该样本在穿着白大褂时，摸鱼概率会瞬间提升 200%。",
+        "观测日志：UNIT_ID #发现远古少女基因，其可爱程度已超出本实验室计算上限。",
+        "观测日志：重组成功！注入‘赛博锦鲤’模组，该样本目前处于好运爆棚状态。",
+        "观测日志：逻辑核心崩溃！该样本同时具备‘理性研究员’与‘混沌吃货’双重人格。",
+        "观测日志：重组失败？不，是因为样本外貌分值过高，系统显示器产生自卑性过热。",
+        "观测日志：分析结论——这是一个试图用科学解释‘为什么土豆长得像屁股’的奇妙生命体。",
+        "观测日志：样本特质——表面是实验室高冷学霸，内心在循环播放《小苹果》。",
+        "观测日志：检测到‘社交恐怖分子’潜质，请勿将其与大量陌生人类同时放置。",
+        "观测日志：无论基因如何重组，观测记录显示：你永远是宇宙中独一无二的怪奇少女。",
+        "观测日志：正在重组... 注入‘快乐因子’成功，该样本目前处于 100% 亢奋状态。",
+        "观测日志：样本报告——其逻辑思维呈跳跃式分布，常人难以捕捉其脑回路。"
+    ];
+
+    function allowDrop(ev) { ev.preventDefault(); }
+    function drag(ev) { ev.dataTransfer.setData("text", "added"); }
+    function drop(ev) {
+        ev.preventDefault();
+        mixCount++;
+        document.getElementById('mix-num').innerText = mixCount;
+        document.getElementById('pod').classList.add('active');
+        setTimeout(() => document.getElementById('pod').classList.remove('active'), 200);
+        document.getElementById('status').innerText = "系统状态：检测到基因片段注入...";
+    }
+
+    function synthesize() {
+        if(mixCount === 0) { 
+            document.getElementById('status').innerText = "系统错误：请先投入基因样本！"; 
+            return; 
         }
 
-        function resetApp() {
-            document.getElementById('result-screen').classList.add('hidden');
-            const welcome = document.getElementById('welcome-screen');
-            welcome.classList.remove('hidden');
-            setTimeout(() => welcome.style.opacity = '1', 50);
+        // 闪烁特效
+        document.getElementById('flash').classList.add('flash-active');
+        setTimeout(() => document.getElementById('flash').classList.remove('flash-active'), 400);
+
+        // 自动清理逻辑
+        if(currentPhotoNode) {
+            const old = currentPhotoNode;
+            old.style.transition = "0.3s";
+            old.style.transform = "scale(1.5) translate(-50%, -50%)";
+            old.style.opacity = "0";
+            setTimeout(() => old.remove(), 300);
         }
 
-        // --- Visual Effect: Text Scramble ---
-        function scrambleText(element, finalText) {
-            let iterations = 0;
-            const letters = "甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥";
-            const interval = setInterval(() => {
-                element.innerText = finalText
-                    .split("")
-                    .map((letter, index) => {
-                        if(index < iterations) {
-                            return finalText[index];
-                        }
-                        return letters[Math.floor(Math.random() * 26)];
-                    })
-                    .join("");
-                
-                if(iterations >= finalText.length){ 
-                    clearInterval(interval);
-                }
-                
-                iterations += 1/2;
-            }, 30);
+        const randomReport = reports[Math.floor(Math.random() * reports.length)];
+        const randomID = Math.floor(Math.random() * 18) + 1; // 对应 1.jpg - 18.jpg
+
+        document.getElementById('status').innerText = "系统状态：正在进行基因链重组...";
+        
+        setTimeout(() => {
+            createPhoto(randomID, randomReport);
+            mixCount = 0;
+            document.getElementById('mix-num').innerText = "0";
+            document.getElementById('status').innerText = "系统状态：重组观测已完成";
+        }, 500);
+    }
+
+    function createPhoto(id, msg) {
+        const frame = document.createElement('div');
+        frame.className = 'photo-frame';
+        const rotation = (Math.random() - 0.5) * 15;
+        frame.style.setProperty('--rot', `${rotation}deg`);
+        frame.style.left = '50%'; frame.style.top = '50%';
+        frame.style.transform = 'translate(-50%, -50%)';
+
+        frame.innerHTML = `
+            <div class="scanner"></div>
+            <img src="${id}.jpg" draggable="false">
+            <div style="color:#000; font-size:11px; margin-top:10px; border-top:1px solid #eee; padding-top:8px; font-weight:bold; font-family:sans-serif; line-height:1.5;">
+                <span style="color:var(--pink)">[ 实验观测记录 ]</span><br>
+                > ${msg}
+            </div>
+        `;
+
+        makeDraggable(frame);
+        document.querySelector('.main-view').appendChild(frame);
+        currentPhotoNode = frame;
+    }
+
+    function applyDecor(emoji) {
+        if(!currentPhotoNode) {
+            document.getElementById('status').innerText = "提示：请先生成照片再进行装饰！";
+            return;
         }
+        const sticker = document.createElement('div');
+        sticker.innerText = emoji; sticker.className = 'sticker';
+        sticker.style.left = 10 + Math.random() * 70 + '%';
+        sticker.style.top = 10 + Math.random() * 70 + '%';
+        currentPhotoNode.appendChild(sticker);
+    }
 
-        // --- Visual Effect: Confetti ---
-        function launchConfetti() {
-            const colors = ['#ff0000', '#ffd700', '#ffffff', '#ff69b4'];
-            for (let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                confetti.classList.add('confetti');
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
-                confetti.style.opacity = Math.random();
-                document.body.appendChild(confetti);
-                
-                setTimeout(() => confetti.remove(), 5000);
-            }
-        }
+    // 修复后的稳定拖拽算法
+    function makeDraggable(el) {
+        let isDragging = false;
+        let startPos = { x: 0, y: 0 };
+        let elPos = { x: 0, y: 0 };
 
-        // --- Visual Effect: Fireworks (Canvas) ---
-        function launchFireworks() {
-            // Trigger a burst from the canvas logic
-            const x = Math.random() * canvas.width;
-            const y = Math.random() * (canvas.height / 2);
-            createFirework(x, y);
-        }
+        el.onmousedown = (e) => {
+            isDragging = true;
+            el.style.zIndex = 2000;
+            const rect = el.getBoundingClientRect();
+            // 锁定旋转角度并切换到绝对坐标定位
+            el.style.transform = `rotate(${el.style.getPropertyValue('--rot')})`;
+            el.style.left = rect.left + 'px';
+            el.style.top = rect.top + 'px';
+            startPos.x = e.clientX; startPos.y = e.clientY;
+            elPos.x = rect.left; elPos.y = rect.top;
 
-        function copyBlessing() {
-            const copyText = document.getElementById("blessing-text");
-            copyText.select();
-            document.execCommand("copy");
-            alert("祝福语已复制到剪贴板！快去发送吧！");
-        }
-
-        let musicPlaying = false;
-        function toggleMusic() {
-            musicPlaying = !musicPlaying;
-            const icon = document.getElementById('music-icon');
-            const status = document.getElementById('music-status');
-            
-            if(musicPlaying) {
-                icon.innerText = "🔔";
-                status.innerText = "沉浸体验已开启 (模拟)";
-                // In a real app, audio.play() would go here
-            } else {
-                icon.innerText = "🎵";
-                status.innerText = "点击开启沉浸体验";
-                // audio.pause()
-            }
-        }
-
-        // --- Background Canvas Animation (Particles & Fireworks) ---
-        const canvas = document.getElementById('canvas-container');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-        let fireworks = [];
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x;
-                this.y = y;
-                this.color = color;
-                this.velocity = {
-                    x: (Math.random() - 0.5) * 3,
-                    y: (Math.random() - 0.5) * 3
-                };
-                this.alpha = 1;
-                this.friction = 0.98;
-            }
-
-            draw() {
-                ctx.globalAlpha = this.alpha;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-            }
-
-            update() {
-                this.velocity.x *= this.friction;
-                this.velocity.y *= this.friction;
-                this.x += this.velocity.x;
-                this.y += this.velocity.y;
-                this.alpha -= 0.01;
-            }
-        }
-
-        class Firework {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.particles = [];
-                const colors = ['#ff0000', '#ffd700', '#00ff00', '#00ffff', '#ff00ff'];
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                
-                for(let i=0; i<50; i++) {
-                    this.particles.push(new Particle(x, y, color));
-                }
-            }
-            
-            update() {
-                this.particles.forEach(p => p.update());
-                this.particles = this.particles.filter(p => p.alpha > 0);
-            }
-            
-            draw() {
-                this.particles.forEach(p => p.draw());
-            }
-        }
-
-        function createFirework(x, y) {
-            fireworks.push(new Firework(x, y));
-        }
-
-        // Ambient Particles (Snow/Light)
-        const ambientParticles = [];
-        for(let i=0; i<50; i++) {
-            ambientParticles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                radius: Math.random() * 2,
-                speed: Math.random() * 0.5 + 0.1
-            });
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw Ambient Particles
-            ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
-            ambientParticles.forEach(p => {
-                p.y -= p.speed;
-                if(p.y < 0) p.y = canvas.height;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fill();
-            });
-
-            // Draw Fireworks
-            fireworks.forEach((fw, index) => {
-                fw.update();
-                fw.draw();
-                if(fw.particles.length === 0) fireworks.splice(index, 1);
-            });
-            
-            // Random auto fireworks
-            if(Math.random() < 0.01) {
-                createFirework(Math.random() * canvas.width, Math.random() * canvas.height / 2);
-            }
-        }
-
-        animate();
-
-    </script>
+            document.onmousemove = (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - startPos.x;
+                const dy = e.clientY - startPos.y;
+                el.style.left = (elPos.x + dx) + 'px';
+                el.style.top = (elPos.y + dy) + 'px';
+            };
+            document.onmouseup = () => { isDragging = false; };
+        };
+    }
+</script>
 </body>
 </html>
